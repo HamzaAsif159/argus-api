@@ -1,0 +1,36 @@
+# --- Django Core ---
+__pycache__/
+*.py[cod]
+*$py.class
+db.sqlite3
+db.sqlite3-journal
+media/
+staticfiles/
+
+# --- Security & Secrets (CRITICAL) ---
+.env
+.secrets
+*.key
+*.pem
+
+# --- Environments & Dependencies ---
+.venv/
+venv/
+env/
+.python-version
+
+# --- Celery & Redis ---
+celerybeat-schedule
+*.log
+
+# --- macOS / System Junk ---
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+
+# --- Editors ---
+.vscode/
+.idea/
+*.swp
+*.swo
