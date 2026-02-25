@@ -10,6 +10,7 @@ djangorestframework-simplejwt = "*"
 django-environ = "*"
 django-redis = "*"
 celery = "*"
+psycopg2-binary = "*"
 
 [dev-packages]
 
