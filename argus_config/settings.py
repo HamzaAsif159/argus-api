@@ -1,10 +1,7 @@
-"""
-Django settings for argus_config project.
-"""
-
 import os
 import environ
 from pathlib import Path
+from celery.schedules import crontab
 
 # Initialize environment variables
 env = environ.Env(
@@ -15,15 +12,14 @@ env = environ.Env(
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Read the .env file
-# This assumes your .env is in the same directory as manage.py
 environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
 # --- Security Settings ---
 SECRET_KEY = env('SECRET_KEY')
 DEBUG = env('DEBUG')
 
-ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=[])
-
+# If DEBUG is True, it allows localhost automatically if list is empty
+ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['127.0.0.1', 'localhost'])
 
 # --- Application Definition ---
 INSTALLED_APPS = [
@@ -72,13 +68,10 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'argus_config.wsgi.application'
 
-
 # --- Database ---
-# Uses the DATABASE_URL variable from your .env
 DATABASES = {
     'default': env.db(),
 }
-
 
 # --- Password Validation ---
 AUTH_PASSWORD_VALIDATORS = [
@@ -88,17 +81,19 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
-
 # --- Internationalization ---
 LANGUAGE_CODE = 'en-us'
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Karachi'
 USE_I18N = True
 USE_TZ = True
 
-
-# --- Static Files ---
+# --- Static & Media Files ---
 STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# This is where your generated PDF reports will be stored
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # --- Django Rest Framework ---
 REST_FRAMEWORK = {
@@ -112,8 +107,22 @@ REST_FRAMEWORK = {
 
 CELERY_BROKER_URL = env('CELERY_BROKER_URL', default='redis://127.0.0.1:6379/0')
 CELERY_RESULT_BACKEND = CELERY_BROKER_URL
-
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'Asia/Karachi'
+
+CELERY_BEAT_SCHEDULE = {
+    'send-daily-security-report': {
+        'task': 'security.tasks.generate_security_report',
+        'schedule': crontab(hour=23, minute=55)
+    },
+}
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = env('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL = f"Argus System <{env('EMAIL_HOST_USER')}>"
