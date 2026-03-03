@@ -3,10 +3,17 @@ from django.db.models import Q
 from .models import Document
 from .serializers import DocumentSerializer
 from security.permissions import ArgusAbacPermission
+from rest_framework.pagination import PageNumberPagination 
+
+class StandardResultsSetPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = 'limit'
+    max_page_size = 100
 
 class DocumentListCreateView(generics.ListCreateAPIView):
     serializer_class = DocumentSerializer
     permission_classes = [permissions.IsAuthenticated, ArgusAbacPermission]
+    pagination_class = StandardResultsSetPagination 
 
     def get_queryset(self):
         user = self.request.user
